@@ -1,0 +1,61 @@
+<html>
+<head>
+<title>Tethys.Album</title>
+<script type="text/javascript" src="Tethys.js"></script>
+</head>
+
+<body>
+
+<div id="test"></div>
+
+<script type="text/javascript">
+
+function Album(id){
+	var container = Tethys.get(id);
+	if(!container) return;
+	this.container = container;
+}
+Album.prototype = {
+	add : function(url, title, comment){
+		if(!url) return;
+		if(!this.data) this.data = {};
+		if(typeof url === 'string'){
+			this.data[url] = {
+				title : title, comment : comment
+			}
+		} else if(typeof url === 'object'){
+			Tethys.extend(url, this.data)
+		}
+	},
+	__cellmaker__ : function(url, data){
+		data = data || {};
+		var cell = Tethys.create('div', { className : 'album_cell' });
+		var img = Tethys.create('img', { src : url, alt : data.title || 'NULL' }).appendTo(cell);
+		var title = Tethys.create('h4', { innerHTML : data.title || 'NULL' }).appendTo(cell);
+		var comment = Tethys.create('span', { innerHTML : data.comment || '' }).appendTo(cell);
+		return cell;
+	}
+}
+
+var album = new Album('#test');
+album.add(
+	'http://hiphotos.baidu.com/lixiwen888/pic/item/d70e664a12e8690b09f7efc5.jpeg', '普罗旺斯', '熏衣草'
+	);
+album.add(
+	'http://imgsrc.baidu.com/forum/pic/item/38cbd848f35257a4c2ce7955.jpg', '普罗旺斯', '一堆熏衣草'
+	);
+album.add(
+	'http://bbs.strtv.cn/UploadFile/2008-12/20081219493962463.jpg', '北海道', '富士山'
+	);
+album.add(
+	'http://www.china5166.cn/admin/UploadFile/UP_2010227182052.jpg', '北海道', '樱花'
+	);
+album.add(
+	'http://wenwen.soso.com/p/20080627/orig-20080627213413-92859660.jpg', '北海道', '樱花'
+	);
+console.log(album)
+</script>
+
+</body>
+
+</html>

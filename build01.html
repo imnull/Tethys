@@ -1,0 +1,180 @@
+ 
+<!DOCTYPE html PUBLIC
+	"-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+	<title></title>
+	<style type="text/css">
+	ul,li{ padding: 0px; margin: 0px; list-style:none; }
+	#test{ border:1px solid #000; height:200px; width:500px; }
+	#test h3{
+		margin: 0px;
+		padding: 0px;
+		width: 100px;
+		height:30px;
+		line-height:30px;
+		text-align:center;
+		overflow: hidden;
+		float: left;
+		cursor: pointer;
+		background-color: #f1f1f1;
+		border:1px solid #ccc;
+	}
+	#test .active{
+		background-color: #fff;
+	}
+	#test ul{ position: absolute; width:auto; padding: 10px; }
+	</style>
+	<script type="text/javascript" src="Tethys.js"></script>
+</head>
+
+<body>
+
+<div id="test">
+
+<h3>aaaaaa</h3>
+<ul>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+</ul>
+
+<h3>bbbb</h3>
+<ul>
+	<li>bbbbbbbbb</li>
+	<li>bbb</li>
+	<li>bbbbb</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+</ul>
+
+<h3>ccc</h3>
+<ul>
+	<li>cccc</li>
+	<li>ccc</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>ccccc</li>
+	<li>ccccc</li>
+	<li>ccc</li>
+</ul>
+
+<h3>ddddd</h3>
+<ul>
+	<li>ddddd</li>
+	<li>d</li>
+	<li>ddd</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+	<li>aaaaaaaaaaaaa</li>
+</ul>
+
+</div>
+
+<script type="text/javascript">
+
+
+/*
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'build01.html', true);
+xhr.onreadystatechange = function(){
+	if(this.readyState === 4){
+		alert(this.responseXML)
+	}
+}
+*/
+//xhr.send(null);
+
+//alert(navigator.userAgent);
+//alert(Tethys.browser);
+
+
+function AutoTab(id, delay, step, headTag, panelTag){
+	var container = Tethys.get(id);
+	if(!container) return;
+
+	headTag = headTag || 'h3';
+	panelTag = panelTag || 'ul';
+	step = step || 10;
+	switch_delay = delay || 3000;
+
+	var active_index = -1;
+	var auto_handler = null;
+
+	function fadeElement(el){
+		el.fade = function(step, sign){
+			if(Tethys.animation.hasKey(this.fade_handler)){
+				Tethys.animation.remove(this.fade_handler);
+				this.fade_handler = null;
+			}
+			if(typeof this.opacity_value != 'number'){
+				this.opacity_value = sign < 0 ? 1 : 0;
+			}
+			var _ = this, seed = sign / step;
+			_.fade_handler = Tethys.animation.regist(function(interval, cost, times){
+				_.opacity_value = Math.max(0, Math.min(1, _.opacity_value + seed));
+				_.css('opacity', _.opacity_value);
+				if(times >= step){
+					Tethys.animation.remove(_.fade_handler);
+					_.fade_handler = null;
+					return true;
+				}
+			});
+		}
+		return el;
+	}
+
+	function active(hs, index){
+		if(hs.length < 1) return;
+		index = (index || 0) % hs.length;
+		if(active_index === index) return;
+		if(hs[active_index]){
+			hs[active_index].linker.fade(step, -1);
+			hs[active_index].className = '';
+		}
+		active_index = index;
+		if(hs[active_index]){
+			hs[active_index].linker.fade(step, 1);
+			hs[active_index].className = 'active';
+		}
+	}
+
+	var headers = Tethys.get(headTag, container)
+		.nextNear(panelTag, function(p){ fadeElement(p).css({'opacity' : 0 }); })
+		.mouseover(function(e){ active(headers, this.index); })
+		.appendTo(container)
+		;
+	Tethys.create('div').css('clear:both;height:0px;overflow:hidden;').appendTo(container);
+	Tethys.get(panelTag, container).appendTo(container);
+
+	container
+		.mouseout(function(){
+			if(!auto_handler){
+				auto_handler = setTimeout(auto, switch_delay);
+			}
+		})
+		.mouseover(function(){
+			clearTimeout(auto_handler);
+			auto_handler = null;
+		})
+		;
+
+	function auto(){
+		active(headers, (active_index + 1) % headers.length);
+		auto_handler = setTimeout(auto, switch_delay)
+	}
+
+	auto();
+}
+
+AutoTab('#test')
+
+
+</script>
+
+</body>
+
+</html>

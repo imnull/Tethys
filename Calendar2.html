@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Calendar</title>
+<script type="text/javascript" src="lunar2.js"></script>
+<script type="text/javascript" src="Tethys.js"></script>
+<script type="text/javascript" src="Tethys.LunarCalendar.js"></script>
+<script type="text/javascript" src="xxzxCalendar.js"></script>
+<style type="text/css">
+td h3{
+	margin: 0px; padding: 0px; text-align:center; font-size:18px;
+	width:25px; height:40px; line-height:23px;
+	float: left;
+}
+td span, td label{
+	display: block;
+	width:45px;
+	height:20px;
+	line-height:20px;
+	float: right;
+	font-size:12px;
+	text-align:right;
+}
+table, td, th{
+	border:2px solid #e6e6e6;
+}
+table{
+	border-right:0px;
+	border-bottom:0px;
+}
+td, th{
+	text-align:center;
+	border-top:0px; border-left:0px;
+	cursor: pointer;
+	width:70px;
+	
+}
+td{ height:40px; }
+
+td span{ font-size:12px; }
+.today{ background-color:#f00; color:#fff; }
+.blur{ color: #ccc; background-color:#eee; }
+.special{ color: #f00; background-color:#ff0; }
+.LunarCalendar{
+	border:1px solid #aaa;
+	width: 510px;
+	padding: 10px;
+	text-align: center;
+	background-color: #fefefe;
+	position: absolute;
+}
+.LunarCalendar input{
+	padding:0px 10px 0px 10px;
+	height:24px;
+	line-height:24px;
+	vertical-align: top;
+}
+#container{
+	padding: 1px;
+	font-size:12px;
+	height:18px;
+	line-height:18px;
+	border:1px solid #eee;
+	clear: both;
+	text-indent:5px;
+}
+#container span{
+	float: left;
+}
+#container a{
+	border:1px solid #fff;
+	display: block;
+	float: left;
+	width:16px;
+	height:16px;
+	cursor: pointer;
+	background:#fff url(arrow0.gif) center center no-repeat;
+}
+#container a:hover{
+	border:1px solid #ccc;
+	background:#fff url(arrow1.gif) center center no-repeat;
+}
+</style>
+</head>
+
+<body>
+<h3>点击右端三角展开日历面板</h3>
+<div id="container"></div>
+<p>ceshi</p>
+<p>ceshi</p>
+<p>ceshi</p>
+<p>ceshi</p>
+<p>ceshi</p>
+<script type="text/javascript">
+xxzxCalendar('#container');
+</script>
+
+</body>
+</html>

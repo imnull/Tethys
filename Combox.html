@@ -1,0 +1,173 @@
+<html>
+<head>
+<title>Combox</title>
+<script type="text/javascript" src="Tethys.js"></script>
+<style type="text/css">
+
+.TethysCombox{
+	border:1px solid #000;
+	width:150px;
+	height:16px;
+	line-height:16px;
+	font-size:12px;
+	padding: 1px;
+	font-family:Verdana;
+}
+.TethysCombox a{
+	display: block;
+	float: right;
+	border:1px solid #000;
+	width:15px;
+	height:14px;
+	line-height:14px;
+	text-align:center;
+	text-decoration:none;
+	font-weight:bold;
+}
+.TethysCombox span{
+	display: block;
+	float: left;
+}
+.TethysCombox ul{
+	border:1px solid #000;
+	width:152px;
+	position: relative;
+	left:-2px;
+	top:1px;
+	background-color:#fafafa;
+	clear: both;
+}
+.TethysCombox li{
+	height:22px;
+	line-height:22px;
+	padding:0px 5px 0px 5px;
+}
+.selected{ background-color:#f00; color:#fff; }
+
+</style>
+</head>
+
+<body>
+<select id="sel1">
+	<option value="1">111111111</option>
+	<option value="2">2222</option>
+	<option value="3">333333333</option>
+	<option value="1">111111111</option>
+	<option value="2">2222</option>
+	<option value="3">333333333</option>
+	<option value="1">111111111</option>
+	<option value="2">2222</option>
+	<option value="3">333333333</option>
+</select>
+
+
+<script type="text/javascript">
+
+function Combox(id){
+	var target = Tethys.get(id);
+	if(!target || target.length < 1) return;
+	if(target.selectedIndex < 0){
+		target.selectedIndex = 0;
+	}
+
+	var index = target.selectedIndex;
+	var value = target[index].value;
+	var opened = false;
+
+	this.value = function(){ return value; }
+	this.selectedIndex = function(){ return index; };
+
+	var bar = Tethys.create('div', { className : 'TethysCombox' });
+	var text = Tethys.create('span', {
+		innerHTML : target[target.selectedIndex].innerHTML
+	}).appendTo(bar);
+	var arrow = Tethys.create('a', {
+		innerHTML : '&#8595;',
+		href : 'javascript:'
+	})
+	.appendTo(bar)
+	.mouseclick(function(e){
+		Tethys.event.nobubble(e);
+		Tethys.event.nodefault(e);
+		if(opened){
+			panel.parentNode && panel.parentNode.removeChild(panel);
+			opened = false;
+			this.innerHTML = '&#8595;';
+		} else {
+			bar.appendChild(panel);
+			opened = true;
+			this.innerHTML = '&#8593;';
+		}
+		return false;
+	});
+
+	var panel = Tethys.create('ul', {
+		style : {
+			margin : '0px', padding : '0px', listStyle : 'none'
+		}
+	});
+
+	Tethys.event.add(document, 'click', function(){
+		panel.parentNode && panel.parentNode.removeChild(panel);
+		opened = false;
+		arrow.innerHTML = '&#8595;';
+	})
+
+
+	var i = 0, len = target.length, _ = this, items = [];
+
+	for(; i < len; i++){
+		items.push(Tethys.create('li', {
+			innerHTML : target[i].innerHTML, value : target[i].value, style : { cursor : 'pointer' },
+			index : i,
+			className : i == index ? 'selected' : ''
+		})
+			.appendTo(panel)
+			.mouseover(function(e){
+				this.css({
+					'background-color': '#06c',
+					'color': '#fff',
+				});
+			})
+			.mouseout(function(e){
+				this.css({
+					'background-color': '',
+					'color': '',
+				});
+			})
+			.mouseup(function(e){
+				Tethys.event.nobubble(e);
+				if(index != this.index){
+					items[index].className = '';
+					this.css({
+						'background-color': '',
+						'color': '',
+					});
+					this.className = 'selected';
+					text.innerHTML = this.innerHTML;
+					value = this.value;
+					index = this.index;
+					target.selectedIndex = index;
+					if(typeof _.onchanged === 'function'){
+						_.onchanged();
+					}
+				}
+			}))
+			;
+	}
+
+	var _ = this;
+
+	target.parentNode.insertBefore(bar, target);
+	target.style.display = 'none';
+	//target.parentNode.removeChild(target);
+}
+
+var combox = new Combox('#sel1');
+combox.onchanged = function(){
+}
+</script>
+
+</body>
+
+</html>
