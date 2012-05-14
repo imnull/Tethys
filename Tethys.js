@@ -54,6 +54,7 @@
 		}
 	}
 
+	var cssExtName = '';
 	var __tethys__ = {
 		$: function (element) {
 			if (!element) return null;
@@ -135,10 +136,7 @@
 							p = null;
 						} else if(typeof v === 'string' || typeof v === 'number'){
 							o.css(n, v);
-							o.css('-webkit-' + n, v);
-							o.css('-moz-' + n, v);
-							o.css('-o-' + n, v);
-							o.css('-ms-' + n, v);
+							o.css(cssExtName + n, v);
 						}
 					}
 					tet.extend({
@@ -440,6 +438,21 @@
 		}
 	})(tet);
 
+
+	switch(tet.browser.name){
+		case 'Chrome':
+			cssExtName = '-webkit-';
+			break;
+		case 'Firefox':
+			cssExtName = '-moz-';
+			break;
+		case 'Opera':
+			cssExtName = '-o-';
+			break;
+		case 'MSIE':
+			cssExtName = '-ms-';
+			break;
+	}
 
 
 	/*
