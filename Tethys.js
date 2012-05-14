@@ -54,6 +54,17 @@
 		}
 	}
 
+	function int(v){
+		var m = String(v).match(/\d+/);
+		if(!m){
+			return 0;
+		} else {
+			v = parseInt(m[0]);
+			if(isNaN(v)) return 0;
+			return v;
+		}
+	}
+
 	var cssExtName = '';
 	var __tethys__ = {
 		$: function (element) {
@@ -89,8 +100,35 @@
 				element.$ = null;
 				return element;
 			}
+		},
+		rect : function(){
+			var _rect = this.getBoundingClientRect();
+			_rect.clientWidth = this.clientWidth;
+			_rect.clientHeight = this.clientHeight;
+			_rect.scrollWidth = this.scrollWidth;
+			_rect.scrollHeight = this.scrollHeight;
+			_rect.offsetWidth = this.offsetWidth;
+			_rect.offsetHeight = this.offsetHeight;
 
+			var css = Tethys.css(this);
+			_rect.borderLeftWidth = int(css.borderLeftWidth);
+			_rect.borderTopWidth = int(css.borderTopWidth);
+			_rect.borderRightWidth = int(css.borderRightWidth);
+			_rect.borderBottomWidth = int(css.borderBottomWidth);
 
+			_rect.marginLeft = int(css.marginLeft);
+			_rect.marginTop = int(css.marginTop);
+			_rect.marginRight = int(css.marginRight);
+			_rect.marginBottom = int(css.marginBottom);
+
+			_rect.paddingLeft = int(css.paddingLeft);
+			_rect.paddingTop = int(css.paddingTop);
+			_rect.paddingRight = int(css.paddingRight);
+			_rect.paddingBottom = int(css.paddingBottom);
+
+			css = null;
+
+			return _rect;
 		},
 		css: function () {
 			switch (arguments.length) {

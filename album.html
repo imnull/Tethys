@@ -1,6 +1,21 @@
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Tethys.Album</title>
+<style type="text/css">
+body{
+	margin: 0px;
+}
+#test{
+	height:300px;
+	width:400px;
+	border:7px solid #ccc;
+	background-color:#f1f1f1;
+	margin: 12px;
+	padding:5px;
+}
+
+</style>
 <script type="text/javascript" src="Tethys.js"></script>
 </head>
 
@@ -10,50 +25,88 @@
 
 <script type="text/javascript">
 
-function Album(id){
-	var container = Tethys.get(id);
-	if(!container) return;
-	this.container = container;
+function Album(){ }
+Album.frameMaker = function(data, w, h, z){
+	data = data || {};
+	var cell = Tethys.create('div', { className : 'album_cell', style : {
+		position : 'absolute', zIndex : z
+	}});
+	var img = Tethys.create('img', { src : data.src, alt : data.title || 'NULL', style : {
+		width : w + 'px', height : h + 'px'
+	}}).appendTo(cell);
+	var title = Tethys.create('h4', { innerHTML : data.title || 'NULL', style : {
+		margin : '0px'
+	}}).appendTo(cell);
+	var comment = Tethys.create('span', { innerHTML : data.comment || '' }).appendTo(cell);
+	cell.fit = function(){
+		title.style.marginTop = 0 - comment.offsetHeight - title.offsetHeight + 'px';
+		//comment.style.marginTop = 0 - comment.offsetHeight + 'px';
+	}
+	return cell;
 }
 Album.prototype = {
-	add : function(url, title, comment){
+	add : function(url, src, title, comment){
 		if(!url) return;
-		if(!this.data) this.data = {};
+		if(!this.data) this.data = [];
 		if(typeof url === 'string'){
-			this.data[url] = {
-				title : title, comment : comment
-			}
-		} else if(typeof url === 'object'){
-			Tethys.extend(url, this.data)
+			this.data.push({
+				url : url,
+				title : title,
+				comment : comment,
+				src : src
+			})
 		}
 	},
-	__cellmaker__ : function(url, data){
-		data = data || {};
-		var cell = Tethys.create('div', { className : 'album_cell' });
-		var img = Tethys.create('img', { src : url, alt : data.title || 'NULL' }).appendTo(cell);
-		var title = Tethys.create('h4', { innerHTML : data.title || 'NULL' }).appendTo(cell);
-		var comment = Tethys.create('span', { innerHTML : data.comment || '' }).appendTo(cell);
-		return cell;
+	fill : function(id){
+		var container = Tethys.get(id);
+		if(!container) return;
+
+		var rect = container.rect();
+		var w = rect.clientWidth - rect.paddingLeft - rect.paddingRight,
+			h = rect.clientHeight - rect.paddingTop - rect.paddingBottom;
+		var i = 0, len = this.data.length;
+		for(; i < len; i++){
+			var frame = Album.frameMaker(this.data[i], w, h, len - i);
+			frame.appendTo(container);
+			frame.fit();
+		}
+		console.log(rect);
 	}
 }
 
-var album = new Album('#test');
+var album = new Album();
 album.add(
-	'http://hiphotos.baidu.com/lixiwen888/pic/item/d70e664a12e8690b09f7efc5.jpeg', '普罗旺斯', '熏衣草'
+	'http://hiphotos.baidu.com/lixiwen888/pic/item/d70e664a12e8690b09f7efc5.jpeg',
+	'http://hiphotos.baidu.com/lixiwen888/pic/item/d70e664a12e8690b09f7efc5.jpeg',
+	'普罗旺斯',
+	'熏衣草'
 	);
 album.add(
-	'http://imgsrc.baidu.com/forum/pic/item/38cbd848f35257a4c2ce7955.jpg', '普罗旺斯', '一堆熏衣草'
+	'http://imgsrc.baidu.com/forum/pic/item/38cbd848f35257a4c2ce7955.jpg',
+	'http://imgsrc.baidu.com/forum/pic/item/38cbd848f35257a4c2ce7955.jpg',
+	'普罗旺斯',
+	'一堆熏衣草'
 	);
 album.add(
-	'http://bbs.strtv.cn/UploadFile/2008-12/20081219493962463.jpg', '北海道', '富士山'
+	'http://bbs.strtv.cn/UploadFile/2008-12/20081219493962463.jpg',
+	'http://bbs.strtv.cn/UploadFile/2008-12/20081219493962463.jpg',
+	'北海道',
+	'富士山'
 	);
 album.add(
-	'http://www.china5166.cn/admin/UploadFile/UP_2010227182052.jpg', '北海道', '樱花'
+	'http://www.china5166.cn/admin/UploadFile/UP_2010227182052.jpg',
+	'http://www.china5166.cn/admin/UploadFile/UP_2010227182052.jpg',
+	'北海道',
+	'樱花'
 	);
 album.add(
-	'http://wenwen.soso.com/p/20080627/orig-20080627213413-92859660.jpg', '北海道', '樱花'
+	'http://wenwen.soso.com/p/20080627/orig-20080627213413-92859660.jpg',
+	'http://wenwen.soso.com/p/20080627/orig-20080627213413-92859660.jpg',
+	'北海道',
+	'樱花'
 	);
-console.log(album)
+
+album.fill('#test');
 </script>
 
 </body>
