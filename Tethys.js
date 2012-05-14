@@ -123,32 +123,46 @@
 					break;
 				case 0:
 					function cssExt(o, n, v){
-						o.css(n, v);
-						o.css('-webkit-' + n, v);
-						o.css('-moz-' + n, v);
-						o.css('-o-' + n, v);
-						o.css('-ms-' + n, v);
+						if(!o || !n || typeof v === 'undefined') return;
+						if(typeof v === 'object'){
+							var p, arr = r;
+							for(p in v){
+								arr.push(p + '(' + v[p] + ')');
+							}
+							p = arr.join(' ');
+							arr = null;
+							cssExt(o, n, p);
+							p = null;
+						} else if(typeof v === 'string' || typeof v === 'number'){
+							o.css(n, v);
+							o.css('-webkit-' + n, v);
+							o.css('-moz-' + n, v);
+							o.css('-o-' + n, v);
+							o.css('-ms-' + n, v);
+						}
 					}
 					tet.extend({
-						rotateX : function(v){
-							cssExt(this, 'transform', 'rotateX(' + v + 'deg)');
+						cssfn : function(n, v){
+							cssExt(this, n, v);
 							return this;
+						},
+						rotateX : function(v){
+							return this.cssfn('transform', 'rotateX(' + v + 'deg)');
 						},
 						rotateY : function(v){
-							cssExt(this, 'transform', 'rotateY(' + v + 'deg)');
-							return this;
+							return this.cssfn('transform', 'rotateY(' + v + 'deg)');
+						},
+						rotate : function(x, y){
+							return this.cssfn('transform', 'rotateX(' + x + 'deg) rotateY(' + y + 'deg)');
 						},
 						perspective : function(v){
-							cssExt(this, 'perspective', v);
-							return this;
+							return this.cssfn('perspective', v);
 						},
 						perspectiveOrigin : function(v){
-							cssExt(this, 'perspective-origin', v + 'px');
-							return this;
+							return this.cssfn('perspective-origin', v + 'px');
 						},
 						transformOrigin : function(v){
-							cssExt(this, 'transform-origin', v);
-							return this;
+							return this.cssfn('transform-origin', v);
 						},
 						opacity : function(v){
 							this.css('opacity', v);
@@ -305,7 +319,6 @@
 		* Convert CSS property name to JS property name
 		*/
 		css2js: function (cssName) {
-			if(cssName.charAt(0) === '-') return cssName;
 			return cssName.replace(/\-(\w)/g, function () {
 				return arguments[1].toUpperCase();
 			})
