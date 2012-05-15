@@ -495,6 +495,7 @@
 
 	switch(tet.browser.name){
 		case 'Chrome':
+		case 'Safari':
 			cssExtName = '-webkit-';
 			break;
 		case 'Firefox':
