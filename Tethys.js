@@ -43,14 +43,13 @@
 			return;
 		}
 		el.style.visibility = 'visible';
-		if (typeof el.filters['alpha'] === 'undefined'
+		if(typeof el.filters === 'unknown'){
+			el.style.filter = 'alpha(opacity=' + val + ')';
+		} else if(typeof el.filters['alpha'] === 'undefined'
 		|| typeof el.filters['alpha'].opacity != 'number') {
 			el.style.filter += ' alpha(opacity=' + val + ')';
 		} else {
-			//el.filters['alpha'].opacity = val;
 			el.filters.item('alpha').opacity = val;
-			//el.style.filter += ' alpha(opacity=' + val + ')';
-			//alert(el.filters['alpha'].opacity)
 		}
 	}
 
@@ -102,7 +101,22 @@
 			}
 		},
 		rect : function(){
-			var _rect = this.getBoundingClientRect();
+			var _rect;
+			if(typeof this.getBoundingClientRect === 'function'){
+				_rect = this.getBoundingClientRect();
+			} else {
+				_rect = { left : 0, top : 0 };
+				var el = this;
+				while(el && el != document.body){
+					_rect.left += el.offsetLeft;
+					_rect.top += el.offsetTop;
+					el = el.offsetParent;
+				}
+				el = null;
+				_rect.right = _rect.left + this.offsetWidth;
+				_rect.bottom = _rect.top + this.offsetHeight;
+			}
+
 			_rect.clientWidth = this.clientWidth;
 			_rect.clientHeight = this.clientHeight;
 			_rect.scrollWidth = this.scrollWidth;
@@ -126,6 +140,8 @@
 			_rect.paddingRight = int(css.paddingRight);
 			_rect.paddingBottom = int(css.paddingBottom);
 
+			_rect.outerWidth = _rect.offsetWidth + _rect.marginLeft + _rect.marginRight;
+			_rect.outerHeight = _rect.offsetHeight + _rect.marginTop + _rect.marginBottom;
 			css = null;
 
 			return _rect;
@@ -560,6 +576,46 @@
 		return r;
 	}
 
+
+	/*
+	 * Animation
+	 */
+	function isEmpty(obj) {
+		if (!obj || typeof obj != 'object') return true;
+		for (var p in obj) break;
+		return typeof p === 'undefined';
+	}
+	function run() {
+		var ac = animationChaos;
+		if (isEmpty(ac.dic)) {
+			if (ac.handler) {
+				clearInterval(ac.handler);
+				ac.handler = null;
+				delete ac.handler;
+			}
+			ac = null;
+			return;
+		}
+		var now = new Date().getTime();
+		for (var p in ac.dic) {
+			if (!ac.dic[p].startTime) {
+				ac.dic[p].startTime = new Date().getTime();
+			}
+			if (ac.dic[p](
+			now - ac.dic[p].startTime,
+			now - ac.dic[p].initTime,
+			ac.dic[p].times
+			)) {
+				delete ac.dic[p];
+			}
+			else {
+				ac.dic[p].times++;
+				ac.dic[p].startTime = now;
+			}
+		}
+		now = null;
+		ac = null;
+	}
 	var animationChaos = {
 		FPS: 60,
 		regist: function (callback) {
@@ -580,42 +636,6 @@
 		},
 		action: function () {
 			if (this.handler) return;
-			function isEmpty(obj) {
-				if (!obj || typeof obj != 'object') return true;
-				for (var p in obj) break;
-				return typeof p === 'undefined';
-			}
-			function run() {
-				var ac = animationChaos;
-				if (isEmpty(ac.dic)) {
-					if (ac.handler) {
-						clearInterval(ac.handler);
-						ac.handler = null;
-						delete ac.handler;
-					}
-					ac = null;
-					return;
-				}
-				var now = new Date().getTime();
-				for (var p in ac.dic) {
-					if (!ac.dic[p].startTime) {
-						ac.dic[p].startTime = new Date().getTime();
-					}
-					if (ac.dic[p](
-					now - ac.dic[p].startTime,
-					now - ac.dic[p].initTime,
-					ac.dic[p].times
-					)) {
-						delete ac.dic[p];
-					}
-					else {
-						ac.dic[p].times++;
-						ac.dic[p].startTime = now;
-					}
-				}
-				now = null;
-				ac = null;
-			}
 			this.handler = setInterval(run, 2000 / this.FPS);
 		}
 	}

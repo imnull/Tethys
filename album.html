@@ -5,108 +5,175 @@
 <style type="text/css">
 body{
 	margin: 0px;
+	background-color:#fff;
 }
-#test{
-	height:300px;
-	width:400px;
+dl, dt, dd{ margin:0px; padding:0px; }
+#main{
+	height:350px;
+	width:600px;
 	border:7px solid #ccc;
 	background-color:#f1f1f1;
 	margin: 12px;
 	padding:5px;
 }
+#main .frame_text_back{
+	background-color:#000;
+	border-top:1px solid #fff;
+}
+#main .button_bar{
+	font-size:12px;
+	font-family:Verdana;
+	text-align:right;
+	padding: 1px 0px 0px 0px;
+}
+#main .button_bar a{
+	border:1px solid #fff;
+	padding: 0px 5px 0px 5px;
+	margin:0px 1px 0px 0px;
+	height:16px;
+	line-height:16px;
+	text-align:center;
+	width:20px;
+	cursor: pointer;
+	text-decoration:none;
+	background-color:#fff;
+}
+#main .button_bar a:hover{
+	border:1px solid #000;
+	background-color:#000;
+	color:#fff;
+}
+#main .button_bar .active{
+	border:1px solid #000;
+	background-color:#fff;
+	color:#000;
+}
+#main dl{
+	color:#fff;
+	padding: 5px;
+	font-size:12px;
+	line-height:1.6em;
+	position: relative;
+}
+
+#main dt{
+	font-size:12px;
+	font-weight:bold;
+}
+#main dd{
+	text-indent:0em;
+	color:#ccc;
+}
+
+
+#view{
+	height:299px;
+	width:398px;
+	border:1px solid #666;
+}
+#view dl{
+	color:#fff;
+	padding: 5px;
+	font-size:12px;
+	line-height:1.6em;
+	position: relative;
+}
+
+#view dt{
+	font-size:12px;
+	font-weight:bold;
+}
+#view dd{
+	text-indent:0em;
+	color:#ccc;
+}
+#view .frame_text_back{
+	background-color:#000;
+	border-top:1px solid #fff;
+}
+
+#thumb a{
+	display: block;
+	width:80px;
+	height:60px;
+}
+#thumb a img{
+	width:75px;
+	height:55px;
+	padding:2px;
+	border:1px solid #666;
+}
+#thumb .active img{
+	display: block;
+	width:75px;
+	height:55px;
+	padding:2px;
+	border:1px solid #000;
+}
 
 </style>
 <script type="text/javascript" src="Tethys.js"></script>
+<script type="text/javascript" src="Tethys.Album.js"></script>
 </head>
 
 <body>
 
-<div id="test"></div>
+<div id="main"></div>
+
+
+<table border="0" id="table1">
+	<tr>
+		<td><div id="view"></div></td>
+		<td><div id="thumb"></div></td>
+	</tr>
+</table>
+
 
 <script type="text/javascript">
+var album = new Album([
+	['images/01.jpeg','images/01.jpeg','1111111','asfdasfsafasffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs f'],
+	['images/02.jpg','images/02.jpg','222222222','fda dfasfasf asfd asfas fasffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs f'],
+	['images/03.jpg','images/03.jpg','333333333333','fdasf fda sfas fas fasfda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs f'],
+	['images/04.jpg','images/04.jpg','444444','fdasf asfdsa fdsa fs aff dasfda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs f'],
+	['images/05.jpg','images/05.jpg','555555555','fda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs ffda dfas fas fdsa fdas fsa f fdas fdsa fdsafs f']
+]);
 
-function Album(){ }
-Album.frameMaker = function(data, w, h, z){
-	data = data || {};
-	var cell = Tethys.create('div', { className : 'album_cell', style : {
-		position : 'absolute', zIndex : z
-	}});
-	var img = Tethys.create('img', { src : data.src, alt : data.title || 'NULL', style : {
-		width : w + 'px', height : h + 'px'
-	}}).appendTo(cell);
-	var title = Tethys.create('h4', { innerHTML : data.title || 'NULL', style : {
-		margin : '0px'
-	}}).appendTo(cell);
-	var comment = Tethys.create('span', { innerHTML : data.comment || '' }).appendTo(cell);
-	cell.fit = function(){
-		title.style.marginTop = 0 - comment.offsetHeight - title.offsetHeight + 'px';
-		//comment.style.marginTop = 0 - comment.offsetHeight + 'px';
-	}
-	return cell;
-}
-Album.prototype = {
-	add : function(url, src, title, comment){
-		if(!url) return;
-		if(!this.data) this.data = [];
-		if(typeof url === 'string'){
-			this.data.push({
-				url : url,
-				title : title,
-				comment : comment,
-				src : src
-			})
-		}
+album.fill('#main');
+
+
+album.fill('#view', {
+	waiting : 1700,
+	interval : 230,
+	createButtonBar : function(){
+		return Tethys.get('#thumb');
 	},
-	fill : function(id){
-		var container = Tethys.get(id);
-		if(!container) return;
+	createButton : function(i, data, parent, fn){
+		Tethys.create('img', {
+			src : data.src
+		}).appendTo(Tethys.create('a', {
+			target : '_blank',
+			href : data.url,
+			index : i,
+			onmouseover : function(){ fn(this.index); },
+		}).css().opacity(.5).appendTo(parent));
+	},
+	unActive : function(f, b){
+		f.flush();
+		f.style.zIndex = 0;
+		f.fadeOut();
+		b.className = '';
+		b.opacity(.5);
+	},
+	active : function(f, b){
+		f.flush();
+		f.style.zIndex = 999;
+		f.fadeIn();
+		b.className = 'active';
+		b.opacity(1);
+	},
+	pauseNode : '#table1'
+});
 
-		var rect = container.rect();
-		var w = rect.clientWidth - rect.paddingLeft - rect.paddingRight,
-			h = rect.clientHeight - rect.paddingTop - rect.paddingBottom;
-		var i = 0, len = this.data.length;
-		for(; i < len; i++){
-			var frame = Album.frameMaker(this.data[i], w, h, len - i);
-			frame.appendTo(container);
-			frame.fit();
-		}
-		console.log(rect);
-	}
-}
-
-var album = new Album();
-album.add(
-	'http://hiphotos.baidu.com/lixiwen888/pic/item/d70e664a12e8690b09f7efc5.jpeg',
-	'http://hiphotos.baidu.com/lixiwen888/pic/item/d70e664a12e8690b09f7efc5.jpeg',
-	'普罗旺斯',
-	'熏衣草'
-	);
-album.add(
-	'http://imgsrc.baidu.com/forum/pic/item/38cbd848f35257a4c2ce7955.jpg',
-	'http://imgsrc.baidu.com/forum/pic/item/38cbd848f35257a4c2ce7955.jpg',
-	'普罗旺斯',
-	'一堆熏衣草'
-	);
-album.add(
-	'http://bbs.strtv.cn/UploadFile/2008-12/20081219493962463.jpg',
-	'http://bbs.strtv.cn/UploadFile/2008-12/20081219493962463.jpg',
-	'北海道',
-	'富士山'
-	);
-album.add(
-	'http://www.china5166.cn/admin/UploadFile/UP_2010227182052.jpg',
-	'http://www.china5166.cn/admin/UploadFile/UP_2010227182052.jpg',
-	'北海道',
-	'樱花'
-	);
-album.add(
-	'http://wenwen.soso.com/p/20080627/orig-20080627213413-92859660.jpg',
-	'http://wenwen.soso.com/p/20080627/orig-20080627213413-92859660.jpg',
-	'北海道',
-	'樱花'
-	);
-
-album.fill('#test');
 </script>
 
 </body>
