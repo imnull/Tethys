@@ -71,7 +71,7 @@ function SmartCanvas(){
 	var cvs = T.elem('canvas');
 	var ctx = cvs.getContext('2d');
 	var cvsEventObj = new evtObj();
-
+	var doc = new CanvasDocument(ctx);
 	var callbacks = {};
 
 	function addEvent(evtName, callback){
@@ -81,8 +81,10 @@ function SmartCanvas(){
 	}
 	function doEvent(evtName, arg){
 		var i = callbacks[evtName].length;
+		if(i < 1) return;
 		while(--i >= 0)
 			callbacks[evtName][i](arg, i);
+		doc.fresh();
 	}
 	function fireEvent(evtName){
 		return function(e){
@@ -104,8 +106,8 @@ function SmartCanvas(){
 		var r = T.viwr();
 	}
 
-	cvs.createDocument = function(){
-		return new CanvasDocument(ctx);
+	cvs.document = function(){
+		return doc;
 	}
 
 	cvs.size = function(w, h){
@@ -145,6 +147,7 @@ function SmartCanvas(){
 			fillStyle : '#000',
 			strokeStyle : '#000',
 			lineWidth : 0,
+			scaleValue : { x : 1, y : 1 },
 			eo : new evtObj(),
 			moveTo : function(_x, _y){
 				this.args[0] = _x;
@@ -155,6 +158,11 @@ function SmartCanvas(){
 				var a = this.args.slice(0);
 				a.unshift(ctx);
 				return callback.apply(this, a)
+			},
+			scale : function(x, y){
+				this.scaleValue.x = x;
+				this.scaleValue.y = y;
+				return this;
 			}
 		}
 		addCommonMethod(o, 'mousemove', 'mouseover', 'mouseout', 'mousedown', 'mouseup', 'mouseclick');
@@ -185,6 +193,12 @@ function SmartCanvas(){
 			var d = _x * _x + _y * _y - this.args[2] * this.args[2];
 			return d < 0;
 		}
+		o.center = function(){
+			return {
+				x : this.args[0],
+				y : this.args[1]
+			}
+		}
 		return o;
 	}
 
@@ -201,7 +215,13 @@ function SmartCanvas(){
 		o.moveCenterTo = function(x, y){
 			x -= this.args[2] * .5;
 			y -= this.args[3] * .5;
-			this.moveTo(x, y);
+			return this.moveTo(x, y);
+		}
+		o.center = function(){
+			return {
+				x : this.args[2] * .5 + this.args[0],
+				y : this.args[3] * .5 + this.args[1]
+			}
 		}
 		return o;
 	}
@@ -215,8 +235,21 @@ function drawElement(el, ctx, callback){
 		return;
 	}
 	ctx.save();
+	
+	//ctx.rotate(0.75);
+	var c = el.center();
+	console.log(c)
+	//ctx.translate(c.x, c.y)
+	ctx.translate(c.x, 100);
 	ctx.beginPath();
+	ctx.scale(el.scaleValue.x, el.scaleValue.y);
+
+
+
 	el.path(ctx);
+
+	ctx.restore();
+
 	ctx.fillStyle = el.fillStyle;
 	ctx.fill();
 	if(el.strokeStyle && el.borderWidth){

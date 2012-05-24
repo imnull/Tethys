@@ -12,7 +12,7 @@
 <script type="text/javascript">
 
 var cvs = SmartCanvas();
-var doc = cvs.createDocument();
+var doc = cvs.document();
 
 
 function fitCanvas(){
@@ -31,18 +31,21 @@ for(var i = 0; i < count * 2; i++){
 	box.mouseover(function(){
 		this.fillStyle = '#666';
 		cvs.style.cursor = 'pointer';
-		doc.fresh();
 	});
 	box.mouseout(function(){
 		this.fillStyle = '#000';
 		cvs.style.cursor = 'default';
-		doc.fresh();
 	});
 	box.mouseclick(function(arg, idx, name){
 		alert('My index is ' + idx);
 	})
 	doc.add(box);
 }
+
+var box = cvs.box(600, 100, 80, 100);
+box.fillStyle = '#fff'
+box.scale(1.2, 1)
+doc.add(box);
 
 fitCanvas();
 
