@@ -1,5 +1,7 @@
 (function (w) {
-
+	w.MOUSE_DOWN = 'ontouchstart' in document ? 'touchstart' : 'mousedown';
+	w.MOUSE_UP	 = 'ontouchend' in document ? 'touchend' : 'mouseup';
+	w.MOUSE_MOVE = 'ontouchmove' in document ? 'touchmove' : 'mousemove';
 	/*
 	* Fix event operation
 	*/
@@ -597,6 +599,9 @@
 			ac = null;
 			return;
 		}
+		if(ac.canvasdoc && typeof ac.canvasdoc.fresh === 'function'){
+			ac.canvasdoc.clear();
+		}
 		var now = new Date().getTime();
 		for (var p in ac.dic) {
 			if (!ac.dic[p].startTime) {
@@ -614,6 +619,10 @@
 				ac.dic[p].startTime = now;
 			}
 		}
+		if(ac.canvasdoc && typeof ac.canvasdoc.fresh === 'function'){
+			ac.canvasdoc.draw();
+		}
+
 		now = null;
 		ac = null;
 	}

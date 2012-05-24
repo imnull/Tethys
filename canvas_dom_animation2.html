@@ -37,8 +37,15 @@ var data = {
 	scaleX : 1, scaleY : 1, rotate : 0
 }
 
-
-
+function createBoxes(count){
+	var arr = [];
+	for(var i = 0, len = count * 2; i < len; i++){
+		arr.push(cvs.box(-160, 220, 120, 90))
+	}
+	return arr;
+}
+Tethys.animation.FPS = 60;
+Tethys.animation.canvasdoc = doc;
 function moveBox(box, cx, cy, delay){
 	var c = box.center();
 	var s = Math.ceil(Math.min(Math.abs(cx - c.x), Math.abs(cy - c.y)) * .5);
@@ -49,31 +56,46 @@ function moveBox(box, cx, cy, delay){
 	setTimeout(function(){
 		Tethys.animation.regist(function(split, interval, step){
 			r = step / s;
-			c = box.center();
-			c.x += x;
-			c.y += y;
-			box.moveCenterTo(c.x, c.y);
-			box.rotate(r * 360);
-			box.scale(r, r);
-			box.globalAlpha = Math.min(0.8, r);
-			box.fillStyle = 'rgba(255, 255, 255, ' + r + ')';
-			box.parent.fresh();
 			if(r >= 1){
-				box.mouseover(function(){
-					box.globalAlpha = 1;
-				}).mouseout(function(){
-					box.globalAlpha = .8;
-				}).mouseclick(function(){
+				box.moveCenterTo(cx, cy);
+				box.rotate(0);
+				box.scale(1, 1);
+				box.globalAlpha = 1;
+				box.fillStyle = 'rgba(255, 255, 255, 1)';
+				box.mouseclick(function(){
 					alert('Oh~');
 				})
 				return true;
+			} else {
+				c = box.center();
+				c.x += x;
+				c.y += y;
+				box.moveCenterTo(c.x, c.y);
+				box.rotate(r * 360);
+				box.scale(r, r);
+				box.globalAlpha = r;
+				box.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, r) + ')';
 			}
 		});
 	}, delay);
 }
 
 window.onload = function(){
-	moveBox(box, 700, 200);
+	//moveBox(box, 700, 200);
+
+	var boxes = createBoxes(3);
+	var half = boxes.length / 2;
+
+	for(var i = 0, len = boxes.length, half = len / 2; i < len; i++){
+		boxes[i].image = img;
+		doc.add(boxes[i]);
+		(function(n){
+			setTimeout(function(){
+				moveBox(boxes[n], 160 * (n % half) + 150, 110 * Math.floor(n / half) + 80);
+				//moveBox(boxes[n], 160 * n + 100, 200);
+			}, 500 * n)
+		})(i)
+	}
 }
 
 /*
@@ -100,7 +122,7 @@ var handler = setInterval(function(){
 }, 50);
 */
 
-doc.add(box);
+//doc.add(box);
 fitCanvas();
 
 

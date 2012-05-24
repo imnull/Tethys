@@ -93,9 +93,9 @@ function SmartCanvas(){
 		}
 	}
 
-	T.evnt(cvs, 'mousemove', fireEvent('mousemove'));
-	T.evnt(cvs, 'mousedown', fireEvent('mousedown'));
-	T.evnt(cvs, 'mouseup', fireEvent('mouseup'));
+	//T.evnt(cvs, 'mousemove', fireEvent('mousemove'));
+	//T.evnt(cvs, 'mousedown', fireEvent('mousedown'));
+	//T.evnt(cvs, 'mouseup', fireEvent('mouseup'));
 	T.evnt(cvs, 'click', fireEvent('mouseclick'));
 
 	cvs.context = function(){
