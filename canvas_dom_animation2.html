@@ -5,124 +5,441 @@
 	<script type="text/javascript" src="SmartCanvas.js"></script>
 	<style type="text/css">
 	body{ margin: 0px; overflow: hidden; }
-	canvas{ border:0px solid #000; background-color:#ccf }
+	canvas{ border:0px solid #000; position:absolute }
 	</style>
 </head>
 
 <body>
 <script type="text/javascript">
 
+var __COMPARE_GROUP__ = [];
+var __COUNTER__ = 0;
+var __SCORE__ = 0;
+var __SCORE_ADDER__ = 1;
+var __ERROR_COUNTER__ = 0;
+var __ERROR_COUNTER_MAX__ = 5;
+var __WAIT_TIME__ = 2000;
+var __START_COUNT__ = 2;
+
 var cvs = SmartCanvas();
 var doc = cvs.document();
+
+var backCvs = SmartCanvas();
+var backDoc = backCvs.document();
+
+function BackGroundCanvas(){
+
+}
 
 
 function fitCanvas(){
 	var vs = T.view();
 	cvs.size(vs.w, vs.h);
 	doc.fresh();
+	backCvs.size(vs.w, vs.h);
+	textBar.args[2] = vs.w;
+	backDoc.fresh();
 }
-T.evnt(window, 'resize', fitCanvas);
+
+var textBar = backCvs.box(0, 0, 10, 40);
+textBar.fillStyle = '#f1f1f1'
+textBar.shadowOffsetX = 0;
+textBar.shadowOffsetY = 10;
+textBar.shadowBlur = 50;
+textBar.fontColor = '#000';
+textBar.drawText = function(ctx){
+	if(!this.text) return;
+	ctx.font = '20pt Arial';
+	ctx.fillText(this.text, this.args[2] * -.5 + 5, 7);
+}
+backDoc.add(textBar);
+
+document.body.appendChild(backCvs);
 document.body.appendChild(cvs);
 
-var box = cvs.box(-160, 220, 160, 120);
-box.fillStyle = '#fff'
+T.evnt(window, 'resize', fitCanvas);
 
 var img = new Image();
-img.onload = function(){
-	box.image = this;
-}
 img.src = 'images/02.jpg';
+var img2 = new Image();
+img2.src = 'images/03.jpg';
 
-var data = {
-	scaleX : 1, scaleY : 1, rotate : 0
+function chaosArray(arr){
+	var i = 0, len = arr.length;
+	for(; i < len; i++){
+		arr.push(arr.splice(Math.floor(len * Math.random()), 1)[0]);
+	}
+	for(; i < len; i++){
+		arr.unshift(arr.splice(Math.floor(len * Math.random()), 1)[0]);
+	}
+}
+
+function getMatrixH(c){
+	var max = Math.ceil(Math.sqrt(c));
+	while(max > 0 && c % max > 0){
+		max--;
+	}
+	return Math.max(max, c / max);
 }
 
 function createBoxes(count){
 	var arr = [];
+	var h = getMatrixH(count * 2);
+
+
+
 	for(var i = 0, len = count * 2; i < len; i++){
-		arr.push(cvs.box(160, -100, 120, 90))
+		var el = cvs.card(100, -T.view().h, 120, 90, 5);
+		el.id = i % count;
+		el.image = [img, img2];
+		el.imageCoord = [
+			20 * el.id, 90, 20, 20
+		]
+		el.text = el.id + 1;
+		el.fontColor = '#000'
+		//el.strokeStyle ='#fff';
+		//el.lineWidth = 5;
+		arr.push(el);
 	}
+
+	chaosArray(arr);
 	return arr;
 }
+
+
+
 Tethys.animation.FPS = 60;
 Tethys.animation.canvasdoc = doc;
-function moveBox(box, cx, cy, delay){
-	var c = box.center();
-	var s = Math.ceil(Math.min(Math.abs(cx - c.x), Math.abs(cy - c.y)) * .5);
-	var x = (cx - c.x) / s;
-	var y = (cy - c.y) / s;
-	delay = delay || 0;
-	var r = 0;
-	setTimeout(function(){
-		Tethys.animation.regist(function(split, interval, step){
-			r = step / s;
-			if(r >= 1){
-				box.moveCenterTo(cx, cy);
-				box.rotate(0);
-				box.scale(1, 1);
-				box.globalAlpha = 1;
-				box.fillStyle = 'rgba(255, 255, 255, 1)';
-				box.mouseclick(function(){
-					alert('Oh~');
-				})
-				return true;
-			} else {
-				c = box.center();
-				c.x += x;
-				c.y += y;
-				box.moveCenterTo(c.x, c.y);
-				box.rotate(r * 360);
-				box.scale(r, r);
-				box.globalAlpha = r;
-				box.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, r) + ')';
-			}
-		});
-	}, delay);
-}
 
-window.onload = function(){
-	//moveBox(box, 700, 200);
+var boxAnimation = [
+	function(box, cx, cy, delay, callback){
+		var c = box.center();
+		var s = 30;//Math.ceil(Math.min(Math.abs(cx - c.x), Math.abs(cy - c.y)) * .5);
+		var x = (cx - c.x) / s;
+		var y = (cy - c.y) / s;
+		delay = delay || 0;
+		var r = 0;
+		setTimeout(function(){
+			Tethys.animation.regist(function(split, interval, step){
+				r = step / s;
+				if(r >= 1){
+					box.moveCenterTo(cx, cy);
+					box.rotate(0);
+					if(!box.over){
+						box.scale(1, 1);
+						box.globalAlpha = 1;
+						box.fillStyle = 'rgba(255, 255, 255, 1)';
+					} else {
+						box.scale(0, 0);
+						box.globalAlpha = 0;
+						box.fillStyle = 'rgba(255, 255, 255, 0)';
+					}
+					
+					if(typeof callback === 'function'){
+						callback(this);
+					}
+					return true;
+				} else {
+					c = box.center();
+					c.x += x;
+					c.y += y;
+					box.moveCenterTo(c.x, c.y);
+					box.rotate(r * 360);
+					if(!box.over){
+						box.scale(r, r);
+						box.globalAlpha = r;
+						box.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, r) + ')';
+					} else {
+						box.scale(1 - r, 1 - r);
+						box.globalAlpha = 1 - r;
+						box.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0, 1 - r) + ')';
+					}
+				}
+			});
+		}, delay);
+	},
+	function(box, cx, cy, delay, callback){
+		var c = box.center();
+		var s = 30;//Math.ceil(Math.min(Math.abs(cx - c.x), Math.abs(cy - c.y)) * .5);
+		var x = (cx - c.x) / s;
+		var y = (cy - c.y) / s;
+		delay = delay || 0;
+		var r = 0;
+		setTimeout(function(){
+			Tethys.animation.regist(function(split, interval, step){
+				r = step / s;
+				if(r >= 1){
+					box.moveCenterTo(cx, cy);
+					if(!box.over){
+						box.scale(1, 1);
+						box.globalAlpha = 1;
+						box.fillStyle = 'rgba(255, 255, 255, 1)';
+					} else {
+						box.scale(0, 0);
+						box.globalAlpha = 0;
+						box.fillStyle = 'rgba(255, 255, 255, 0)';
+					}	
+					if(typeof callback === 'function'){
+						callback(this);
+					}
+					return true;
+				} else {
+					c = box.center();
+					c.x += x;
+					c.y += y;
+					box.moveCenterTo(c.x, c.y);
+					if(!box.over){
+						box.scale(Math.cos(r * Math.PI * 4), r);
+						box.globalAlpha = r;
+						box.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, r) + ')';
+					} else {
+						box.scale(Math.cos(r * Math.PI * 4), 1 - r);
+						box.globalAlpha = 1 - r;
+						box.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0, 1 - r) + ')';
+					}
+				}
+			});
+		}, delay);
+	}
+]
 
-	var boxes = createBoxes(3);
-	var half = boxes.length / 2;
 
-	for(var i = 0, len = boxes.length, half = len / 2; i < len; i++){
-		boxes[i].image = img;
+function boxIn(boxes, callback){
+	var len = boxes.length;
+	var h = getMatrixH(len);
+
+	var v = len / h;
+
+	var size = T.view();
+	size.h += 50;
+	var width = Math.ceil(Math.min(size.w / h, size.h / v));
+	var height = width * .75;
+	var totalWidth = width * h;
+	var totalHeight = height * v;
+	var offsetY = height * .5 + (size.h - totalHeight) * .5;
+	var offsetX = width * .5 + (size.w - totalWidth) * .5;
+	//offsetY *= .85;
+	var counter = 0;
+
+	textBar.text = 'Please wait...';
+	textBar.parent.fresh();
+
+	for(var i = 0; i < len; i++){
+		boxes[i].args[2] = width * .85;
+		boxes[i].args[3] = height * .85;
 		doc.add(boxes[i]);
 		(function(n){
 			setTimeout(function(){
-				moveBox(boxes[n], 160 * (n % half) + 150, 110 * Math.floor(n / half) + 80);
+				boxAnimation[1](boxes[n]
+					, (width) * (n % h) + offsetX
+					, (height) * Math.floor(n / h) + offsetY
+					, 100 * n
+					, function(b){
+						counter += 1;
+						if(counter >= len && typeof callback === 'function'){
+
+							textBar.text = 'You have '
+								+ (__WAIT_TIME__ / 1000)
+								+ ' seconds to catch them.';
+							textBar.parent.fresh();
+
+							setTimeout(function(){
+								textBar.text = 'Here we go ~';
+								textBar.parent.fresh();
+								callback(boxes);
+							}, __WAIT_TIME__)
+						}
+					}
+					);
 				//moveBox(boxes[n], 160 * n + 100, 200);
 			}, 100 * n)
 		})(i)
 	}
 }
 
-/*
-var handler = setInterval(function(){
-	data.rotate = (data.rotate + 6);
-	var r = Math.min(data.rotate / 360, 1);
-	data.scaleX = Math.sin(Math.PI / 180 * data.rotate);
-	box.fillStyle = 'rgba(0,0,0,' + r + ')';
-	box.scale(r, r);
-	box.rotate(data.rotate * 2);
-	box.moveTo(data.rotate, 100);
-	box.globalAlpha = Math.min(0.8, r);
-	if(data.rotate >= 360){
-		clearInterval(handler);
-		box.scale(1, 1);
-		box.mouseover(function(){
-			box.globalAlpha = 1;
-		});
-		box.mouseout(function(){
-			box.globalAlpha = 0.8;
-		});
-	}
-	doc.fresh();
-}, 50);
-*/
+function boxTurnAround(box, callback){
+	var c = 15;
+	Tethys.animation.regist(function(split, interval, step){
+		var r = step / c;
+		box.scale(Math.cos(r * Math.PI * .5), 1);
+		if(step >= c){
+			box.image.unshift(box.image.pop());
+			if(!!box.imageCoord){
+				box._imageCoord = box.imageCoord;
+				box.imageCoord = null;
+			} else if(!!box._imageCoord && !box.imageCoord){
+				box.imageCoord = box._imageCoord;
+				box._imageCoord = null;
+			}
+			Tethys.animation.regist(function(s, i, step){
+				var r = step / c;
+				box.scale(Math.sin(r * Math.PI * .5), 1);
+				if(step >= c){
+					textBar.text = 'Score: ' + __SCORE__ + '  Failed: '
+						+ __ERROR_COUNTER__ 
+						+ '/' 
+						+ __ERROR_COUNTER_MAX__;
+					textBar.parent.fresh();
+					if(typeof callback === 'function'){
+						callback(box);
+					}
+					return true;
+				}
+			});
+			return true;
+		}
+	});
+}
 
-//doc.add(box);
+function boxHide(boxes, callback){
+	chaosArray(boxes)
+	var len = boxes.length;
+	var c = 20;
+	var counter = 0;
+	for(var i = 0; i < len; i++){
+		(function(n){
+			setTimeout(function(){
+				boxTurnAround(boxes[n], function(box){
+					counter += 1;
+					if(counter >= len && typeof callback === 'function'){
+						callback(boxes);
+					}
+				})
+			}, 100 * n)
+		})(i)
+	}
+}
+
+function boxOutA(boxes, callback){
+	var len = boxes.length;
+	var c = 20;
+	var counter = 0;
+	for(var i = 0; i < len; i++){
+		boxes[i].over = true;
+		boxAnimation[0](boxes[i]
+			, 200
+			, -10 - boxes[i].args[3]
+			, 200 * i
+			, function(b){
+				counter += 1;
+				if(counter >= len && typeof callback === 'function'){
+					callback(boxes);
+				}
+			}
+			);
+	}
+}
+
+function boxOutB(boxes, callback){
+	var len = boxes.length;
+	var c = 20;
+	var counter = 0;
+	for(var i = 0; i < len; i++){
+		if(boxes[i].over){
+			counter++;
+			continue;
+		}
+		boxes[i].over = true;
+		boxAnimation[0](boxes[i]
+			, boxes[i].center().x
+			, T.view().h + boxes[i].args[3] + 10
+			, 100 * i
+			, function(b){
+				counter += 1;
+				if(counter >= len && typeof callback === 'function'){
+					callback(boxes);
+				}
+			}
+			);
+	}
+}
+
+
+
+function JUDGE(boxes){
+	if(__COMPARE_GROUP__[0].id === __COMPARE_GROUP__[1].id){
+		__SCORE__ += __SCORE_ADDER__;
+		__SCORE_ADDER__ += 1;
+		boxOutA(__COMPARE_GROUP__, function(){
+			if(ALLDONE(boxes)){
+				alert('All done!');
+				__START_COUNT__ += 1;
+				start();
+			} else {
+				__COMPARE_GROUP__.splice(0, __COMPARE_GROUP__.length);
+				__COUNTER__ = 0;
+			}
+		})
+		__ERROR_COUNTER__ = Math.max(0, __ERROR_COUNTER__ - 1);
+	} else {
+		__ERROR_COUNTER__ += 1;
+		if(__ERROR_COUNTER__ < __ERROR_COUNTER_MAX__){
+			boxHide(__COMPARE_GROUP__, function(boxes){
+				__COMPARE_GROUP__[0].running = __COMPARE_GROUP__[1].running = 0;
+				__COMPARE_GROUP__.splice(0, __COMPARE_GROUP__.length);
+				__COUNTER__ = 0;
+				__SCORE_ADDER__ = 1;
+			})
+		} else {
+			boxOutB(boxes, function(){
+				alert('Should be restart.');
+				__START_COUNT__ = 3;
+				__SCORE__ = 0;
+				start();
+			})
+		}
+		
+	}
+	console.log(__SCORE__, __ERROR_COUNTER__);
+	textBar.text = 'Score: ' + __SCORE__ + '  Failed: ' + __ERROR_COUNTER__ + '/' + __ERROR_COUNTER_MAX__;
+	textBar.parent.fresh();
+}
+
+function ALLDONE(boxes){
+	for(var i = 0, len = boxes.length; i < len; i++){
+		if(!boxes[i].over) return false;
+	}
+	return true;
+}
+
+function boxActive(boxes){
+	for(var i = 0, len = boxes.length; i < len; i++){
+		boxes[i].mouseclick(function(){
+			if(__COMPARE_GROUP__.length >= 2 || this.running) return;
+			this.running = 1;
+			__COMPARE_GROUP__.push(this);
+			boxTurnAround(this, function(box){
+				this.running = 2;
+				__COUNTER__ += 1;
+				if(__COUNTER__ >= 2){
+					JUDGE(boxes);
+				}
+			});
+
+		})
+	}
+
+}
+
+function init(){
+	__COMPARE_GROUP__.splice(0, __COMPARE_GROUP__.length);
+	__COUNTER__ = 0;
+	__ERROR_COUNTER__ = 0;
+}
+function start(){
+	init();
+	var boxes = createBoxes(__START_COUNT__);
+	boxIn(boxes, function(boxes){
+		boxHide(boxes, function(boxes){
+			boxActive(boxes)
+		});
+	})
+}
+
+window.onload = function(){
+	start(__START_COUNT__);
+}
+
 fitCanvas();
 
 </script>

@@ -93,9 +93,9 @@ function SmartCanvas(){
 		}
 	}
 
-	//T.evnt(cvs, 'mousemove', fireEvent('mousemove'));
-	//T.evnt(cvs, 'mousedown', fireEvent('mousedown'));
-	//T.evnt(cvs, 'mouseup', fireEvent('mouseup'));
+	T.evnt(cvs, 'mousemove', fireEvent('mousemove'));
+	T.evnt(cvs, 'mousedown', fireEvent('mousedown'));
+	T.evnt(cvs, 'mouseup', fireEvent('mouseup'));
 	T.evnt(cvs, 'click', fireEvent('mouseclick'));
 
 	cvs.context = function(){
@@ -239,6 +239,87 @@ function SmartCanvas(){
 			if(!this.image) return;
 			ctx.drawImage(this.image, this.args[2] * -.5, this.args[3] * -.5, this.args[2], this.args[3]);
 		}
+		o.drawText = function(ctx){
+			if(!this.text) return;
+			ctx.font = '20pt Arial';
+			ctx.fillText(this.text, this.args[0], this.args[1]);
+		}
+		return o;
+	}
+
+	cvs.card = function(_x, _y, _w, _h, _r){
+		var o = createObj(_x, _y, _w, _h, _r || 0);
+		o.path = function(ctx){
+			var c = this.center();
+			ctx.translate(c.x, c.y);
+			ctx.rotate(this.rotateAngle * Math.PI / 180);
+			ctx.scale(this.scaleValue.x, this.scaleValue.y);
+
+			var left = this.args[2] * -.5, top = this.args[3] * -.5,
+				right = left + this.args[2], bottom = top + this.args[3];
+			var r = this.args[4];
+			ctx.moveTo(left, top + r);
+			ctx.arc(left + r, top + r, r, Math.PI, Math.PI * 1.5, false);
+			ctx.lineTo(right - r, top);
+			ctx.arc(right - r, top + r, r, Math.PI * 1.5, Math.PI * 2, false);
+			ctx.lineTo(right, bottom - r);
+			ctx.arc(right - r, bottom - r, r, 0, Math.PI * .5, false);
+			ctx.lineTo(left + r, bottom);
+			ctx.arc(left + r, bottom - r, r, Math.PI * .5, Math.PI, false);
+			ctx.closePath();
+			return this;
+		}
+		o.check = function(arg){
+			var a = arg.x - this.args[0], b = arg.y - this.args[1];
+			return a > 0 && b > 0 && a < this.args[2]  && b < this.args[3];
+		}
+		o.moveCenterTo = function(x, y){
+			x -= this.args[2] * .5;
+			y -= this.args[3] * .5;
+			return this.moveTo(x, y);
+		}
+		o.center = function(){
+			return {
+				x : this.args[2] * .5 + this.args[0],
+				y : this.args[3] * .5 + this.args[1]
+			}
+		}
+		o.drawImage = function(ctx){
+			if(!this.image) return;
+			var img;
+			if(this.image instanceof Array){
+				if(this.image.length < 1) return;
+				img = this.image[0]
+			} else {
+				img = this.image;
+			}
+			var r = this.args[4];
+			if(!this.imageCoord){
+				ctx.drawImage(img
+					, this.args[2] * -.5 + r
+					, this.args[3] * -.5 + r
+					, this.args[2] - r * 2
+					, this.args[3] - r * 2);
+			} else {
+				ctx.drawImage(img
+					, this.imageCoord[0]
+					, this.imageCoord[1]
+					, this.imageCoord[2]
+					, this.imageCoord[3]
+					, this.args[2] * -.5 + r
+					, this.args[3] * -.5 + r
+					, this.args[2] - r * 2
+					, this.args[3] - r * 2
+					);
+			}
+			img = null;
+			
+		}
+		o.drawText = function(ctx){
+			if(!this.text) return;
+			ctx.font = '20pt Arial';
+			ctx.fillText(this.text, 0, 0);
+		}
 		return o;
 	}
 
@@ -254,29 +335,38 @@ function drawElement(el, ctx, callback){
 	
 
 	ctx.globalAlpha = el.globalAlpha;
-	//ctx.rotate(0.75);
 	var c = el.center();
 
 	ctx.beginPath();
 	el.path(ctx);
 
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = 0;
-	ctx.shadowBlur = 10;
-	ctx.shadowColor = "rgba(0,0,0,0.5)";
+	ctx.shadowOffsetX = typeof el.shadowOffsetX === 'number' ? el.shadowOffsetX : 5;
+	ctx.shadowOffsetY = typeof el.shadowOffsetY === 'number' ? el.shadowOffsetY : 5;
+	ctx.shadowBlur = typeof el.shadowBlur === 'number' ? el.shadowBlur : 5;
+	ctx.shadowColor = el.shadowColor || "rgba(0,0,0,0.5)";
 	ctx.fillStyle = el.fillStyle;
 	ctx.fill();
+
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur = 0;
 
 	if(typeof el.drawImage === 'function'){
 		el.drawImage(ctx);
 	}
 
-	if(el.strokeStyle && el.borderWidth){
+	if(typeof el.drawText === 'function'){
+		if(el.fontColor) ctx.fillStyle = el.fontColor;
+		el.drawText(ctx);
+	}
+
+	if(el.strokeStyle && el.lineWidth){
 		ctx.strokeStyle = el.strokeStyle;
-		ctx.borderWidth = el.borderWidth;
+		ctx.lineWidth = el.lineWidth;
 		ctx.stroke();
 	}
 
+	
 	ctx.restore();
 }
 
@@ -289,6 +379,7 @@ function CanvasDocument(ctx){
 	}
 	this.clear = function(color){
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		return;
 		if(color){
 			ctx.save();
 			ctx.beginPath();

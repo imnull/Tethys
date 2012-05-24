@@ -647,6 +647,9 @@
 		action: function () {
 			if (this.handler) return;
 			this.handler = setInterval(run, 2000 / this.FPS);
+		},
+		isRunning : function(){
+			return 'handler' in this;
 		}
 	}
 
