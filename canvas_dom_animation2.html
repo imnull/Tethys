@@ -40,7 +40,7 @@ var data = {
 function createBoxes(count){
 	var arr = [];
 	for(var i = 0, len = count * 2; i < len; i++){
-		arr.push(cvs.box(-160, 220, 120, 90))
+		arr.push(cvs.box(160, -100, 120, 90))
 	}
 	return arr;
 }
@@ -93,7 +93,7 @@ window.onload = function(){
 			setTimeout(function(){
 				moveBox(boxes[n], 160 * (n % half) + 150, 110 * Math.floor(n / half) + 80);
 				//moveBox(boxes[n], 160 * n + 100, 200);
-			}, 500 * n)
+			}, 100 * n)
 		})(i)
 	}
 }
@@ -124,7 +124,6 @@ var handler = setInterval(function(){
 
 //doc.add(box);
 fitCanvas();
-
 
 </script>
 
