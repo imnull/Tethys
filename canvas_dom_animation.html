@@ -1,0 +1,93 @@
+<html>
+<head>
+	<title>Canvas Document</title>
+	<script type="text/javascript" src="Tethys.js"></script>
+	<script type="text/javascript" src="SmartCanvas.js"></script>
+	<style type="text/css">
+	body{ margin: 0px; overflow: hidden; }
+	canvas{ border:0px solid #000; background-color:#ccf }
+	</style>
+</head>
+
+<body>
+<script type="text/javascript">
+
+var cvs = SmartCanvas();
+var doc = cvs.document();
+
+
+function fitCanvas(){
+	var vs = T.view();
+	cvs.size(vs.w, vs.h);
+	doc.fresh();
+}
+T.evnt(window, 'resize', fitCanvas);
+document.body.appendChild(cvs);
+
+var box = cvs.box(160, 100, 160, 120);
+box.fillStyle = '#fff'
+
+var img = new Image();
+img.onload = function(){
+	//box.image = this;
+}
+img.src = 'images/02.jpg';
+
+var data = {
+	scaleX : 1, scaleY : 1, rotate : 0
+}
+
+function moveBox(box, cx, cy, delay){
+	var c = box.center();
+	var s = Math.ceil(Math.min(Math.abs(cx - c.x), Math.abs(cy - c.y)));
+	var x = (cx - c.x) / s;
+	var y = (cy - c.y) / s;
+	delay = delay || 0;
+
+	setTimeout(function(){
+		Tethys.animation.regist(function(split, interval, step){
+			c = box.center();
+			c.x += x;
+			c.y += y;
+			box.moveCenterTo(c.x, c.y);
+			return step >= s;
+		});
+	}, delay);
+	
+}
+moveBox(box, 300, 300);
+
+/*
+var handler = setInterval(function(){
+	data.rotate = (data.rotate + 6);
+	var r = Math.min(data.rotate / 360, 1);
+	data.scaleX = Math.sin(Math.PI / 180 * data.rotate);
+	box.fillStyle = 'rgba(0,0,0,' + r + ')';
+	box.scale(r, r);
+	box.rotate(data.rotate * 2);
+	box.moveTo(data.rotate, 100);
+	box.globalAlpha = Math.min(0.8, r);
+	if(data.rotate >= 360){
+		clearInterval(handler);
+		box.scale(1, 1);
+		box.mouseover(function(){
+			box.globalAlpha = 1;
+		});
+		box.mouseout(function(){
+			box.globalAlpha = 0.8;
+		});
+	}
+	doc.fresh();
+}, 50);
+*/
+
+doc.add(box);
+fitCanvas();
+
+
+</script>
+
+</body>
+
+
+</html>

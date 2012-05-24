@@ -147,7 +147,9 @@ function SmartCanvas(){
 			fillStyle : '#000',
 			strokeStyle : '#000',
 			lineWidth : 0,
+			rotateAngle : 0,
 			scaleValue : { x : 1, y : 1 },
+			globalAlpha : 1,
 			eo : new evtObj(),
 			moveTo : function(_x, _y){
 				this.args[0] = _x;
@@ -163,6 +165,9 @@ function SmartCanvas(){
 				this.scaleValue.x = x;
 				this.scaleValue.y = y;
 				return this;
+			},
+			rotate : function(deg){
+				this.rotateAngle = deg;
 			}
 		}
 		addCommonMethod(o, 'mousemove', 'mouseover', 'mouseout', 'mousedown', 'mouseup', 'mouseclick');
@@ -185,7 +190,10 @@ function SmartCanvas(){
 	cvs.circle = function(_x, _y, _r){
 		var o = createObj(_x, _y, _r);
 		o.path = function(ctx){
-			ctx.arc(this.args[0], this.args[1], this.args[2], 0, Math.PI * 2);
+			ctx.translate(this.args[0], this.args[1]);
+			ctx.rotate(this.rotateAngle * Math.PI / 180);
+			ctx.scale(this.scaleValue.x, this.scaleValue.y);
+			ctx.arc(0, 0, this.args[2], 0, Math.PI * 2);
 			return this;
 		}
 		o.check = function(a){
@@ -205,7 +213,11 @@ function SmartCanvas(){
 	cvs.box = function(_x, _y, _w, _h){
 		var o = createObj(_x, _y, _w, _h);
 		o.path = function(ctx){
-			ctx.rect(this.args[0], this.args[1], this.args[2], this.args[3]);
+			var c = this.center();
+			ctx.translate(c.x, c.y);
+			ctx.rotate(this.rotateAngle * Math.PI / 180);
+			ctx.scale(this.scaleValue.x, this.scaleValue.y);
+			ctx.rect(this.args[2] * -.5, this.args[3] * -.5, this.args[2], this.args[3]);
 			return this;
 		}
 		o.check = function(arg){
@@ -223,6 +235,10 @@ function SmartCanvas(){
 				y : this.args[3] * .5 + this.args[1]
 			}
 		}
+		o.drawImage = function(ctx){
+			if(!this.image) return;
+			ctx.drawImage(this.image, this.args[2] * -.5, this.args[3] * -.5, this.args[2], this.args[3]);
+		}
 		return o;
 	}
 
@@ -236,22 +252,25 @@ function drawElement(el, ctx, callback){
 	}
 	ctx.save();
 	
+
+	ctx.globalAlpha = el.globalAlpha;
 	//ctx.rotate(0.75);
 	var c = el.center();
-	console.log(c)
-	//ctx.translate(c.x, c.y)
-	ctx.translate(c.x, 100);
+
 	ctx.beginPath();
-	ctx.scale(el.scaleValue.x, el.scaleValue.y);
-
-
-
 	el.path(ctx);
 
-	ctx.restore();
-
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur = 10;
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
 	ctx.fillStyle = el.fillStyle;
 	ctx.fill();
+
+	if(typeof el.drawImage === 'function'){
+		el.drawImage(ctx);
+	}
+
 	if(el.strokeStyle && el.borderWidth){
 		ctx.strokeStyle = el.strokeStyle;
 		ctx.borderWidth = el.borderWidth;

@@ -27,7 +27,9 @@ document.body.appendChild(cvs);
 var count = 3;
 
 for(var i = 0; i < count * 2; i++){
-	var box = cvs.box(i * 100, 120, 80, 100);
+	var box = cvs.box(i * 100 + 50, 120, 80, 80);
+	var circle = cvs.circle(i * 100 + 40 + 50, 290, 40);
+
 	box.mouseover(function(){
 		this.fillStyle = '#666';
 		cvs.style.cursor = 'pointer';
@@ -39,12 +41,25 @@ for(var i = 0; i < count * 2; i++){
 	box.mouseclick(function(arg, idx, name){
 		alert('My index is ' + idx);
 	})
+
+	circle.mouseover(function(){
+		this.fillStyle = '#666';
+		cvs.style.cursor = 'pointer';
+	});
+	circle.mouseout(function(){
+		this.fillStyle = '#000';
+		cvs.style.cursor = 'default';
+	});
+	circle.mouseclick(function(arg, idx, name){
+		alert('My index is ' + idx);
+	})
 	doc.add(box);
+	doc.add(circle);
 }
 
-var box = cvs.box(600, 100, 80, 100);
+var box = cvs.box(660, 100, 80, 100);
 box.fillStyle = '#fff'
-box.scale(1.2, 1)
+box.scale(1.4, 1)
 doc.add(box);
 
 fitCanvas();
