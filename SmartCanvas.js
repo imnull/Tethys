@@ -93,9 +93,9 @@ function SmartCanvas(){
 		}
 	}
 
-	T.evnt(cvs, 'mousemove', fireEvent('mousemove'));
-	T.evnt(cvs, 'mousedown', fireEvent('mousedown'));
-	T.evnt(cvs, 'mouseup', fireEvent('mouseup'));
+	//T.evnt(cvs, 'mousemove', fireEvent('mousemove'));
+	//T.evnt(cvs, 'mousedown', fireEvent('mousedown'));
+	//T.evnt(cvs, 'mouseup', fireEvent('mouseup'));
 	T.evnt(cvs, 'click', fireEvent('mouseclick'));
 
 	cvs.context = function(){
@@ -170,8 +170,15 @@ function SmartCanvas(){
 				this.rotateAngle = deg;
 			}
 		}
-		addCommonMethod(o, 'mousemove', 'mouseover', 'mouseout', 'mousedown', 'mouseup', 'mouseclick');
-		addCommonEvent(o, 'mouseclick', 'mouseup', 'mousedown');
+		addCommonMethod(o
+			//, 'mousemove', 'mouseover', 'mouseout', 'mousedown', 'mouseup'
+			, 'mouseclick'
+			);
+		addCommonEvent(o
+			, 'mouseclick'
+			//, 'mouseup', 'mousedown'
+			);
+		/*
 		addEvent('mousemove', function(arg, i){
 			if(o.check(arg)){
 				o.eo.fire('mousemove', arg, i, 'mousemove');
@@ -184,6 +191,7 @@ function SmartCanvas(){
 				o.eo.fire('mouseout', arg, i, 'mouseout');
 			}
 		});
+		*/
 		return o;
 	}
 
@@ -340,16 +348,16 @@ function drawElement(el, ctx, callback){
 	ctx.beginPath();
 	el.path(ctx);
 
-	ctx.shadowOffsetX = typeof el.shadowOffsetX === 'number' ? el.shadowOffsetX : 5;
-	ctx.shadowOffsetY = typeof el.shadowOffsetY === 'number' ? el.shadowOffsetY : 5;
-	ctx.shadowBlur = typeof el.shadowBlur === 'number' ? el.shadowBlur : 5;
-	ctx.shadowColor = el.shadowColor || "rgba(0,0,0,0.5)";
+	//ctx.shadowOffsetX = typeof el.shadowOffsetX === 'number' ? el.shadowOffsetX : 5;
+	//ctx.shadowOffsetY = typeof el.shadowOffsetY === 'number' ? el.shadowOffsetY : 5;
+	//ctx.shadowBlur = typeof el.shadowBlur === 'number' ? el.shadowBlur : 5;
+	//ctx.shadowColor = el.shadowColor || "rgba(0,0,0,0.5)";
 	ctx.fillStyle = el.fillStyle;
 	ctx.fill();
 
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = 0;
-	ctx.shadowBlur = 0;
+	//ctx.shadowOffsetX = 0;
+	//ctx.shadowOffsetY = 0;
+	//ctx.shadowBlur = 0;
 
 	if(typeof el.drawImage === 'function'){
 		el.drawImage(ctx);
@@ -364,6 +372,11 @@ function drawElement(el, ctx, callback){
 		ctx.strokeStyle = el.strokeStyle;
 		ctx.lineWidth = el.lineWidth;
 		ctx.stroke();
+	}
+
+	if(el.extFillStyle){
+		ctx.fillStyle = el.extFillStyle;
+		ctx.fill();
 	}
 
 	

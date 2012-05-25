@@ -4,7 +4,7 @@
 	<script type="text/javascript" src="Tethys.js"></script>
 	<script type="text/javascript" src="SmartCanvas.js"></script>
 	<style type="text/css">
-	body{ margin: 0px; overflow: hidden; }
+	body{ margin: 0px; overflow: hidden; background-color:#ccc; }
 	canvas{ border:0px solid #000; position:absolute }
 	</style>
 </head>
@@ -19,7 +19,7 @@ var __SCORE_ADDER__ = 1;
 var __ERROR_COUNTER__ = 0;
 var __ERROR_COUNTER_MAX__ = 5;
 var __WAIT_TIME__ = 2000;
-var __START_COUNT__ = 2;
+var __START_COUNT__ = 3;
 
 var cvs = SmartCanvas();
 var doc = cvs.document();
@@ -50,7 +50,7 @@ textBar.fontColor = '#000';
 textBar.drawText = function(ctx){
 	if(!this.text) return;
 	ctx.font = '20pt Arial';
-	ctx.fillText(this.text, this.args[2] * -.5 + 5, 7);
+	ctx.fillText(this.text, this.args[2] * -.5 + 5, 10);
 }
 backDoc.add(textBar);
 
@@ -89,7 +89,7 @@ function createBoxes(count){
 
 
 	for(var i = 0, len = count * 2; i < len; i++){
-		var el = cvs.card(100, -T.view().h, 120, 90, 5);
+		var el = cvs.card(100, -T.view().h, 120, 90, 12);
 		el.id = i % count;
 		el.image = [img, img2];
 		el.imageCoord = [
@@ -119,6 +119,8 @@ var boxAnimation = [
 		var y = (cy - c.y) / s;
 		delay = delay || 0;
 		var r = 0;
+		var scaleX = box.scaleValue.x;
+		var scaleY = box.scaleValue.y;
 		setTimeout(function(){
 			Tethys.animation.regist(function(split, interval, step){
 				r = step / s;
@@ -146,13 +148,14 @@ var boxAnimation = [
 					box.moveCenterTo(c.x, c.y);
 					box.rotate(r * 360);
 					if(!box.over){
-						box.scale(r, r);
+						box.scale(r * scaleX, r * scaleY);
 						box.globalAlpha = r;
 						box.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, r) + ')';
 					} else {
-						box.scale(1 - r, 1 - r);
-						box.globalAlpha = 1 - r;
-						box.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0, 1 - r) + ')';
+						r = 1 - r;
+						box.scale(r * scaleX, r * scaleY);
+						box.globalAlpha = r;
+						box.fillStyle = 'rgba(255, 255, 255, ' + Math.max(0, r) + ')';
 					}
 				}
 			});
@@ -165,6 +168,8 @@ var boxAnimation = [
 		var y = (cy - c.y) / s;
 		delay = delay || 0;
 		var r = 0;
+		var scaleX = box.scaleValue.x;
+		var scaleY = box.scaleValue.y;
 		setTimeout(function(){
 			Tethys.animation.regist(function(split, interval, step){
 				r = step / s;
@@ -213,7 +218,8 @@ function boxIn(boxes, callback){
 	var size = T.view();
 	size.h += 50;
 	var width = Math.ceil(Math.min(size.w / h, size.h / v));
-	var height = width * .75;
+	width *= .85;
+	var height = width * .90;
 	var totalWidth = width * h;
 	var totalHeight = height * v;
 	var offsetY = height * .5 + (size.h - totalHeight) * .5;
@@ -225,8 +231,8 @@ function boxIn(boxes, callback){
 	textBar.parent.fresh();
 
 	for(var i = 0; i < len; i++){
-		boxes[i].args[2] = width * .85;
-		boxes[i].args[3] = height * .85;
+		boxes[i].args[2] = width * .9;
+		boxes[i].args[3] = height * .9;
 		doc.add(boxes[i]);
 		(function(n){
 			setTimeout(function(){
@@ -258,7 +264,7 @@ function boxIn(boxes, callback){
 }
 
 function boxTurnAround(box, callback){
-	var c = 15;
+	var c = 10;
 	Tethys.animation.regist(function(split, interval, step){
 		var r = step / c;
 		box.scale(Math.cos(r * Math.PI * .5), 1);
@@ -296,6 +302,8 @@ function boxHide(boxes, callback){
 	var len = boxes.length;
 	var c = 20;
 	var counter = 0;
+	
+
 	for(var i = 0; i < len; i++){
 		(function(n){
 			setTimeout(function(){
@@ -310,30 +318,126 @@ function boxHide(boxes, callback){
 	}
 }
 
+function boxHide2(boxes, callback){
+	chaosArray(boxes)
+	var len = boxes.length;
+	var c = 20;
+	var counter = 0;
+	
+
+	setTimeout(function(){
+		boxScaleLittle2(boxes, function(bb){
+			for(var i = 0; i < len; i++){
+				(function(n){
+					setTimeout(function(){
+						boxTurnAround(boxes[n], function(box){
+							counter += 1;
+							if(counter >= len && typeof callback === 'function'){
+								callback(boxes);
+							}
+						})
+					}, 100 * n)
+				})(i)
+			}
+		});
+		return;
+		
+	}, 500);
+	return;
+}
+function boxScaleLittle(boxes, callback){
+	var len = boxes.length;
+	var c = 3;
+	var sub = 0.1;
+	var counter = 0;
+	for(var i = 0; i < len; i++){
+		(function(n){
+			Tethys.animation.regist(function(s, interval, step){
+				var scale = 1 - step / c * sub;
+				boxes[n].scale(scale, scale);
+				if(step >= c){
+					counter++
+					if(counter >= len && typeof callback === 'function'){
+						callback(boxes);
+					}
+					return true;
+				}
+				return false;
+			})
+		})(i)
+	}
+}
+
+function boxScaleLittle2(boxes, callback){
+	var len = boxes.length;
+	var c = 3;
+	var sub = 0.1;
+	var counter = 0;
+	for(var i = 0; i < len; i++){
+		(function(n){
+			Tethys.animation.regist(function(s, interval, step){
+				var scale = 1 - step / c * sub;
+				boxes[n].scale(scale, scale);
+				boxes[n].extFillStyle = 'rgba(255, 0, 0, ' + (step / c * .4) + ')'
+				if(step >= c){
+					setTimeout(function(){
+						var sx = boxes[n].scaleValue.x, sy = boxes[n].scaleValue.y;
+						Tethys.animation.regist(function(s, interval, step){
+							boxes[n].scale(sx + step / c * sub, sy + step / c * sub);
+							boxes[n].extFillStyle = 'rgba(255, 0, 0, ' + ((1 - step / c) * .4) + ')';
+							if(step >= c){
+								counter++;
+								boxes[n].extFillStyle = null;
+								boxes[n].scale(1, 1);
+								if(counter >= len && typeof callback === 'function'){
+									callback(boxes);
+								}
+								return true
+							}
+						})
+
+					}, 1000);
+					return true;
+				}
+				return false;
+			})
+		})(i)
+	}
+}
+
 function boxOutA(boxes, callback){
 	var len = boxes.length;
 	var c = 20;
 	var counter = 0;
-	for(var i = 0; i < len; i++){
-		boxes[i].over = true;
-		boxAnimation[0](boxes[i]
-			, 200
-			, -10 - boxes[i].args[3]
-			, 200 * i
-			, function(b){
-				counter += 1;
-				if(counter >= len && typeof callback === 'function'){
-					callback(boxes);
+	
+	setTimeout(function(){
+		boxScaleLittle(boxes, function(boxes){
+			setTimeout(function(){
+				for(var i = 0; i < len; i++){
+					boxes[i].over = true;
+					boxAnimation[0](boxes[i]
+						, 200
+						, -10 - boxes[i].args[3]
+						, 200 * i
+						, function(b){
+							counter += 1;
+							if(counter >= len && typeof callback === 'function'){
+								callback(boxes);
+							}
+						}
+						);
 				}
-			}
-			);
-	}
+			}, 500)
+			
+		});
+	}, 500)
 }
 
 function boxOutB(boxes, callback){
 	var len = boxes.length;
 	var c = 20;
 	var counter = 0;
+
 	for(var i = 0; i < len; i++){
 		if(boxes[i].over){
 			counter++;
@@ -374,7 +478,7 @@ function JUDGE(boxes){
 	} else {
 		__ERROR_COUNTER__ += 1;
 		if(__ERROR_COUNTER__ < __ERROR_COUNTER_MAX__){
-			boxHide(__COMPARE_GROUP__, function(boxes){
+			boxHide2(__COMPARE_GROUP__, function(boxes){
 				__COMPARE_GROUP__[0].running = __COMPARE_GROUP__[1].running = 0;
 				__COMPARE_GROUP__.splice(0, __COMPARE_GROUP__.length);
 				__COUNTER__ = 0;
@@ -390,7 +494,6 @@ function JUDGE(boxes){
 		}
 		
 	}
-	console.log(__SCORE__, __ERROR_COUNTER__);
 	textBar.text = 'Score: ' + __SCORE__ + '  Failed: ' + __ERROR_COUNTER__ + '/' + __ERROR_COUNTER_MAX__;
 	textBar.parent.fresh();
 }
